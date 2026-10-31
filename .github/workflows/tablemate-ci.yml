@@ -1,0 +1,41 @@
+name: Tablemate CI
+
+on:
+  push:
+    paths:
+      - 'tablemate/**'
+      - 'sites/tablemate/**'
+      - '.github/workflows/tablemate-ci.yml'
+  pull_request:
+    paths:
+      - 'tablemate/**'
+      - 'sites/tablemate/**'
+      - '.github/workflows/tablemate-ci.yml'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: tablemate
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: node --check server.js
+      - run: node --check public/app.js
+      - run: npm test
+  hosted-worker:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: sites/tablemate
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: npm run build
+      - run: npm run validate
+      - run: node --test test/worker.test.js

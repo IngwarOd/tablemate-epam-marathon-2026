@@ -1,0 +1,120 @@
+[
+  {
+    "id": "tomato",
+    "name": "Томати й страчатела",
+    "category": "Закуски",
+    "price": 245,
+    "icon": "🍅",
+    "color": "peach",
+    "image": "https://images.unsplash.com/photo-1753791320863-bda47c67cd00?auto=format&fit=crop&w=900&q=80",
+    "allergens": [
+      "Молоко"
+    ],
+    "description": "Стиглі томати, базилік, оливкова олія"
+  },
+  {
+    "id": "hummus",
+    "name": "Хумус із зеленню",
+    "category": "Закуски",
+    "price": 195,
+    "icon": "🫘",
+    "color": "sand",
+    "image": "https://images.unsplash.com/photo-1726588551950-7e70637945ff?auto=format&fit=crop&w=900&q=80",
+    "allergens": [
+      "Кунжут"
+    ],
+    "description": "Нут, тахіні, хрусткі овочі"
+  },
+  {
+    "id": "soup",
+    "name": "Гарбузовий крем-суп",
+    "category": "Закуски",
+    "price": 185,
+    "icon": "🥣",
+    "color": "orange",
+    "image": "https://images.unsplash.com/photo-1680798552307-2cc4ddde8e98?auto=format&fit=crop&w=900&q=80",
+    "allergens": [
+      "Молоко"
+    ],
+    "description": "Печений гарбуз і насіння"
+  },
+  {
+    "id": "pasta",
+    "name": "Паста з грибами",
+    "category": "Основні страви",
+    "price": 315,
+    "icon": "🍝",
+    "color": "rose",
+    "image": "https://images.unsplash.com/photo-1692296979424-2d337691af6f?auto=format&fit=crop&w=900&q=80",
+    "allergens": [
+      "Глютен",
+      "Молоко"
+    ],
+    "description": "Лісові гриби, вершковий соус"
+  },
+  {
+    "id": "fish",
+    "name": "Риба з лимоном",
+    "category": "Основні страви",
+    "price": 420,
+    "icon": "🐟",
+    "color": "blue",
+    "image": "https://images.unsplash.com/photo-1673436977947-0787164a9abc?auto=format&fit=crop&w=900&q=80",
+    "allergens": [
+      "Риба"
+    ],
+    "description": "Запечена риба, зелений горошок"
+  },
+  {
+    "id": "risotto",
+    "name": "Ризото з шафраном",
+    "category": "Основні страви",
+    "price": 345,
+    "icon": "🍚",
+    "color": "yellow",
+    "image": "https://images.unsplash.com/photo-1682428617976-f25633ed8469?auto=format&fit=crop&w=900&q=80",
+    "allergens": [
+      "Молоко"
+    ],
+    "description": "Арборіо, шафран, пармезан"
+  },
+  {
+    "id": "tofu",
+    "name": "Тофу з овочами",
+    "category": "Основні страви",
+    "price": 285,
+    "icon": "🥦",
+    "color": "green",
+    "image": "https://images.unsplash.com/photo-1572448910681-3341d74893d2?auto=format&fit=crop&w=900&q=80",
+    "allergens": [
+      "Соя"
+    ],
+    "description": "Сезонні овочі, імбирний соус"
+  },
+  {
+    "id": "cake",
+    "name": "Медовик",
+    "category": "Десерти",
+    "price": 175,
+    "icon": "🍰",
+    "color": "cream",
+    "image": "https://images.unsplash.com/photo-1710717249738-b6415d69e515?auto=format&fit=crop&w=900&q=80",
+    "allergens": [
+      "Глютен",
+      "Молоко",
+      "Яйця"
+    ],
+    "description": "Тонкі коржі, сметанковий крем"
+  },
+  {
+    "id": "pear",
+    "name": "Груша в карамелі",
+    "category": "Десерти",
+    "price": 165,
+    "icon": "🍐",
+    "color": "mint",
+    "image": "https://images.unsplash.com/photo-1694607094007-cf667adaa6d3?auto=format&fit=crop&w=900&q=80",
+    "allergens": [],
+    "description": "Тепла груша, прянощі, сорбет"
+  }
+]

@@ -5,7 +5,7 @@ const root = resolve(import.meta.dirname, '..');
 const source = await readFile(resolve(root, 'worker/index.js'), 'utf8');
 const core = await readFile(resolve(root, 'worker/core.js'), 'utf8');
 const menu = await readFile(resolve(root, 'menu.json'), 'utf8');
-const assets = Object.fromEntries(await Promise.all(['index.html', 'app.js', 'styles.css', 'split.js'].map(async file => [
+const assets = Object.fromEntries(await Promise.all(['index.html', 'app.js', 'styles.css', 'split.js', 'favicon.svg'].map(async file => [
   `/${file}`, await readFile(resolve(root, 'public', file), 'utf8')
 ])));
 const worker = source.replace('__MENU__', menu).replace('__ASSETS__', JSON.stringify(assets)).replace('/* __CORE__ */', core);

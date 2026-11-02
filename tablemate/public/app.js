@@ -2,6 +2,7 @@ import { splitBill } from './split.js';
 
 const root = document.querySelector('#app');
 const toastNode = document.querySelector('#toast');
+const demoMode = location.pathname === '/demo';
 const state = { group: null, token: '', kitchenToken: '', kitchen: null, dialog: null, dishes: [], allergens: [], filter: 'Усі', tipPercent: 10, busy: false };
 const currency = value => `${new Intl.NumberFormat('uk-UA').format(value)} ₴`;
 const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[character]);
@@ -43,8 +44,8 @@ function saveIdentity(group, token, kitchenToken = '') {
   state.group = group;
   state.token = token;
   state.kitchenToken = kitchenToken;
-  localStorage.setItem('tablemate', JSON.stringify({ groupId: group.id, token, kitchenToken }));
-  history.replaceState({}, '', '/');
+  (demoMode ? sessionStorage : localStorage).setItem(demoMode ? 'tablemate-demo' : 'tablemate', JSON.stringify({ groupId: group.id, token, kitchenToken }));
+  history.replaceState({}, '', demoMode ? '/demo' : '/');
   render();
   window.scrollTo(0, 0);
 }
@@ -116,7 +117,7 @@ function dashboard() {
   const own = group.participants.find(p => p.id === group.mySessionId);
   const isOwner = group.role === 'owner';
   const invite = `${location.origin}/join?group=${encodeURIComponent(group.id)}&invite=${encodeURIComponent(group.inviteCode || '')}`;
-  return `<header class="site-header"><a href="/" class="brand" aria-label="Tablemate, головна"><span class="brand-mark">✳</span><span>tablemate<span class="brand-period">.</span></span></a><nav><a href="#table">Мій стіл</a><a href="#menu">Меню</a><button type="button" class="logout" data-action="leave">Вийти ↗</button></nav></header>
+  return `<header class="site-header"><a href="/" class="brand" aria-label="Tablemate, головна"><span class="brand-mark">✳</span><span>tablemate<span class="brand-period">.</span></span></a><nav><a href="#table">Мій стіл</a><a href="#menu">Меню</a>${demoMode ? '' : '<a href="/demo" target="_blank" rel="noopener">Живе демо ↗</a>'}<button type="button" class="logout" data-action="leave">${demoMode ? 'Закрити демо' : 'Вийти'} ↗</button></nav></header>
     <main><section class="dashboard-hero" id="table"><div class="hero-copy"><span class="eyebrow light">СПІЛЬНА ВЕЧЕРЯ БЕЗ ХАОСУ</span><h1>${escapeHtml(group.title)}</h1><p>${dateText(group.serviceAt, group.timeZone, group.utcOffsetMinutes)} · ${group.participants.length} із ${group.guestLimit} місць <small>(${escapeHtml(timeLabel(group.timeZone, group.utcOffsetMinutes))})</small></p><div class="hero-actions">${isOwner ? `<button class="button cream" type="button" data-action="copy">Скопіювати запрошення <span>↗</span></button>${state.kitchenToken ? '<button class="button outline-light" type="button" data-action="open-kitchen">Кухонний талон ↗</button><button class="button outline-light" type="button" data-action="copy-kitchen">Скопіювати талон ↗</button>' : ''}` : '<span class="pill hero-pill">Ви приєдналися до столу</span>'}<span class="pill ${group.status === 'Submitted' ? 'submitted' : ''}">${group.status === 'Submitted' ? '✓ Передано на кухню' : '● Збираємо замовлення'}</span></div></div><div class="hero-decoration" aria-hidden="true"><div class="plate"><span>✳</span></div><span class="orbit orbit-one">✦</span><span class="orbit orbit-two">✳</span></div></section>
     ${isOwner ? `<section class="dashboard-grid"><div><div class="section-heading"><div><span class="eyebrow">УСІ ЗА ОДНИМ СТОЛОМ</span><h2>Хто що замовив</h2></div><p>Слідкуйте за кошиками гостей і відправляйте одне замовлення.</p></div><div class="people-grid">${group.participants.map(participantCard).join('')}</div><div class="total-bar"><div><span>Сума всіх кошиків</span><strong>${currency(group.insights.total)}</strong><small>До кухні: ${currency(group.insights.submittedTotal)}</small></div><button class="button primary" type="button" data-action="submit-group" ${group.status !== 'Open' || group.insights.submittedTotal === 0 ? 'disabled' : ''}>${group.status === 'Submitted' ? 'Замовлення на кухні ✓' : 'Передати замовлення'} <span>↗</span></button></div></div>${insightPanel()}</section>${splitPanel()}${orderPanel()}` : `<section class="guest-intro"><span class="eyebrow">ВАШЕ ПЕРЕДЗАМОВЛЕННЯ</span><h2>Обирайте те, що смакує вам</h2><p>Ваш кошик бачить організатор. Перед відправкою перевірте страви та алергени.</p>${own?.avoid.length ? `<div class="allergy-note">Позначені обмеження: ${escapeHtml(own.avoid.join(', '))}</div>` : ''}</section>`}
     ${menuPanel(own)}<footer class="footer"><span>tablemate<span class="brand-period">.</span></span><p>Створено для EPAM IT Marathon 2026 · Вечеря стає кращою разом.</p></footer></main>`;
@@ -127,11 +128,11 @@ function welcome() {
   const groupId = params.get('group');
   const tomorrow = new Date(Date.now() + 86_400_000);
   const dateValue = new Date(tomorrow.getTime() - tomorrow.getTimezoneOffset() * 60_000).toISOString().slice(0, 16);
-  return `<header class="site-header"><a href="/" class="brand"><span class="brand-mark">✳</span><span>tablemate<span class="brand-period">.</span></span></a><nav><a href="#how">Як це працює</a><a href="#start">Створити стіл</a></nav></header><main>
-    <section class="welcome-hero"><div class="welcome-copy"><span class="eyebrow">ВЕЧЕРЯ ПОЧИНАЄТЬСЯ ТУТ</span><h1>Разом за столом.<br><em>Без плутанини</em><br>у замовленні.</h1><p>Запросіть друзів, дозвольте кожному обрати свої страви й зберіть усе в одне зручне передзамовлення.</p><a class="button primary" href="#start">Створити свій стіл <span>↗</span></a><div class="welcome-proof"><span>✳</span><p>Одна компанія. Одна вечеря. Жодних нескінченних повідомлень.</p></div></div><div class="welcome-art" aria-hidden="true"><div class="art-plate"><span>🍝</span></div><div class="floating-card top">🍅 <span>Томати й страчатела<br><strong>× 2</strong></span></div><div class="floating-card bottom"><span class="check">✓</span><span>Замовлення зібрано<br><strong>для всієї компанії</strong></span></div><span class="art-star">✳</span></div></section>
+  return `<header class="site-header"><a href="/" class="brand"><span class="brand-mark">✳</span><span>tablemate<span class="brand-period">.</span></span></a><nav><a href="#how">Як це працює</a><a href="#start">Створити стіл</a><a href="/demo" target="_blank" rel="noopener">Живе демо ↗</a></nav></header><main>
+    <section class="welcome-hero"><div class="welcome-copy"><span class="eyebrow">ВЕЧЕРЯ ПОЧИНАЄТЬСЯ ТУТ</span><h1>Разом за столом.<br><em>Без плутанини</em><br>у замовленні.</h1><p>Запросіть друзів, дозвольте кожному обрати свої страви й зберіть усе в одне зручне передзамовлення.</p><div class="welcome-actions"><a class="button primary" href="#start">Створити свій стіл <span>↗</span></a><a class="button demo-link" href="/demo" target="_blank" rel="noopener">Подивитися живе демо <span>↗</span></a></div><div class="welcome-proof"><span>✳</span><p>Одна компанія. Одна вечеря. Жодних нескінченних повідомлень.</p></div></div><div class="welcome-art" aria-hidden="true"><div class="art-plate"><span>🍝</span></div><div class="floating-card top">🍅 <span>Томати й страчатела<br><strong>× 2</strong></span></div><div class="floating-card bottom"><span class="check">✓</span><span>Замовлення зібрано<br><strong>для всієї компанії</strong></span></div><span class="art-star">✳</span></div></section>
     <section class="steps" id="how"><div class="section-heading"><div><span class="eyebrow">ТРИ ПРОСТІ КРОКИ</span><h2>Від ідеї до вечері</h2></div></div><div class="step-grid"><article><span>01</span><h3>Створіть стіл</h3><p>Вкажіть дату, кількість гостей і комфортний бюджет.</p></article><article><span>02</span><h3>Запросіть друзів</h3><p>Кожен збере власний кошик за посиланням.</p></article><article><span>03</span><h3>Підтвердіть разом</h3><p>Перевірте суму, обмеження й відправте спільне замовлення.</p></article></div></section>
     <section class="start-section" id="start"><div><span class="eyebrow light">ВАШ ВЕЧІР ПОЧИНАЄТЬСЯ</span><h2>${invite ? 'Вас запросили до столу' : 'Створімо ваш стіл'}</h2><p>${invite ? 'Назвіть своє ім’я та вкажіть продукти, яких уникаєте.' : 'Це займе хвилину. Після створення ви отримаєте приватне посилання для друзів.'}</p></div>
-      ${invite && groupId ? `<form id="join-form" class="start-form"><input type="hidden" name="groupId" value="${escapeHtml(groupId)}"><input type="hidden" name="inviteCode" value="${escapeHtml(invite)}"><label>Ваше ім’я<input name="name" maxlength="50" required placeholder="Наприклад, Олена"></label><fieldset><legend>Що вам не підходить?</legend><div class="allergen-options">${state.allergens.map(a => `<label><input type="checkbox" name="avoid" value="${escapeHtml(a)}"><span>${escapeHtml(a)}</span></label>`).join('')}</div></fieldset><button class="button primary" type="submit">Приєднатися до столу ↗</button></form>` : `<form id="create-form" class="start-form"><label>Назва вечора<input name="title" maxlength="80" required value="Вечеря з друзями"></label><div class="form-row"><label>Ваше ім’я<input name="ownerName" maxlength="50" required placeholder="Наприклад, Ігор"></label><label>Дата й час<input name="serviceAt" type="datetime-local" value="${dateValue}" required></label></div><div class="form-row"><label>Місць за столом<input name="guestLimit" type="number" min="2" max="20" value="5" required></label><label>Бюджет, ₴<input name="budget" type="number" min="100" max="100000" value="1800" required></label></div><button class="button primary" type="submit">Створити стіл ↗</button><button class="text-button demo-button" type="button" data-action="demo">Або подивитися живе демо →</button></form>`}
+      ${invite && groupId ? `<form id="join-form" class="start-form"><input type="hidden" name="groupId" value="${escapeHtml(groupId)}"><input type="hidden" name="inviteCode" value="${escapeHtml(invite)}"><label>Ваше ім’я<input name="name" maxlength="50" required placeholder="Наприклад, Олена"></label><fieldset><legend>Що вам не підходить?</legend><div class="allergen-options">${state.allergens.map(a => `<label><input type="checkbox" name="avoid" value="${escapeHtml(a)}"><span>${escapeHtml(a)}</span></label>`).join('')}</div></fieldset><button class="button primary" type="submit">Приєднатися до столу ↗</button></form>` : `<form id="create-form" class="start-form"><label>Назва вечора<input name="title" maxlength="80" required value="Вечеря з друзями"></label><div class="form-row"><label>Ваше ім’я<input name="ownerName" maxlength="50" required placeholder="Наприклад, Ігор"></label><label>Дата й час<input name="serviceAt" type="datetime-local" value="${dateValue}" required></label></div><div class="form-row"><label>Місць за столом<input name="guestLimit" type="number" min="2" max="20" value="5" required></label><label>Бюджет, ₴<input name="budget" type="number" min="100" max="100000" value="1800" required></label></div><button class="button primary" type="submit">Створити стіл ↗</button><a class="text-button demo-button" href="/demo" target="_blank" rel="noopener">Або подивитися живе демо →</a></form>`}
     </section><footer class="footer"><span>tablemate<span class="brand-period">.</span></span><p>Створено для EPAM IT Marathon 2026 · Вечеря стає кращою разом.</p></footer></main>`;
 }
 function kitchenScreen() {
@@ -152,6 +153,20 @@ function dialog() {
 function render() {
   root.innerHTML = state.kitchen ? kitchenScreen() : state.group ? dashboard() + dialog() : welcome();
   if (state.dialog) root.querySelector('[data-action="cancel-dialog"]')?.focus();
+}
+
+async function createDemo() {
+  const serviceAt = new Date(Date.now() + 86_400_000).toISOString();
+  const created = await api('/groups', { method: 'POST', data: { title: 'Теплий вечір у місті', ownerName: 'Ігор', serviceAt, timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone, utcOffsetMinutes: -new Date(serviceAt).getTimezoneOffset(), guestLimit: 5, budget: 1200 }, token: '' });
+  const group = created.group;
+  const first = await api(`/groups/${group.id}/join`, { method: 'POST', data: { inviteCode: group.inviteCode, name: 'Олена', avoid: ['Молоко'] }, token: '' });
+  await api(`/groups/${group.id}/sessions/${first.group.mySessionId}/cart`, { method: 'PUT', data: { items: [{ dishId: 'tofu', quantity: 1 }, { dishId: 'pear', quantity: 1 }] }, token: first.token });
+  await api(`/groups/${group.id}/sessions/${first.group.mySessionId}/submit`, { method: 'POST', token: first.token });
+  const second = await api(`/groups/${group.id}/join`, { method: 'POST', data: { inviteCode: group.inviteCode, name: 'Марко', avoid: [] }, token: '' });
+  await api(`/groups/${group.id}/sessions/${second.group.mySessionId}/cart`, { method: 'PUT', data: { items: [{ dishId: 'fish', quantity: 2 }, { dishId: 'cake', quantity: 1 }] }, token: second.token });
+  const refreshed = await api(`/groups/${group.id}`, { token: created.token });
+  saveIdentity(refreshed, created.token, created.kitchenToken);
+  notify('Демо-стіл готовий. Спробуйте додати страви або змінити бюджет.');
 }
 
 root.addEventListener('submit', event => {
@@ -183,7 +198,11 @@ root.addEventListener('click', event => {
   if (action === 'filter') { state.filter = button.dataset.filter; render(); return; }
   if (action === 'tip') { state.tipPercent = Number(button.dataset.percent); render(); return; }
   if (action === 'reload') { location.reload(); return; }
-  if (action === 'leave') { localStorage.removeItem('tablemate'); state.group = null; state.token = ''; state.kitchenToken = ''; render(); return; }
+  if (action === 'leave') {
+    (demoMode ? sessionStorage : localStorage).removeItem(demoMode ? 'tablemate-demo' : 'tablemate');
+    if (demoMode) { location.assign('/'); return; }
+    state.group = null; state.token = ''; state.kitchenToken = ''; render(); return;
+  }
   if (action === 'copy') return run(async () => {
     const link = `${location.origin}/join?group=${encodeURIComponent(state.group.id)}&invite=${encodeURIComponent(state.group.inviteCode)}`;
     await navigator.clipboard.writeText(link); notify('Посилання скопійовано.');
@@ -228,19 +247,6 @@ root.addEventListener('click', event => {
     state.kitchen.data = await api(`/groups/${state.kitchen.groupId}/kitchen`, { token: state.kitchen.token });
     render(); notify('Талон оновлено.');
   });
-  if (action === 'demo') return run(async () => {
-    const serviceAt = new Date(Date.now() + 86_400_000).toISOString();
-    const created = await api('/groups', { method: 'POST', data: { title: 'Теплий вечір у місті', ownerName: 'Ігор', serviceAt, timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone, utcOffsetMinutes: -new Date(serviceAt).getTimezoneOffset(), guestLimit: 5, budget: 1200 }, token: '' });
-    const group = created.group;
-    const first = await api(`/groups/${group.id}/join`, { method: 'POST', data: { inviteCode: group.inviteCode, name: 'Олена', avoid: ['Молоко'] }, token: '' });
-    await api(`/groups/${group.id}/sessions/${first.group.mySessionId}/cart`, { method: 'PUT', data: { items: [{ dishId: 'tofu', quantity: 1 }, { dishId: 'pear', quantity: 1 }] }, token: first.token });
-    await api(`/groups/${group.id}/sessions/${first.group.mySessionId}/submit`, { method: 'POST', token: first.token });
-    const second = await api(`/groups/${group.id}/join`, { method: 'POST', data: { inviteCode: group.inviteCode, name: 'Марко', avoid: [] }, token: '' });
-    await api(`/groups/${group.id}/sessions/${second.group.mySessionId}/cart`, { method: 'PUT', data: { items: [{ dishId: 'fish', quantity: 2 }, { dishId: 'cake', quantity: 1 }] }, token: second.token });
-    const refreshed = await api(`/groups/${group.id}`, { token: created.token });
-    saveIdentity(refreshed, created.token, created.kitchenToken);
-    notify('Демо-стіл готовий. Спробуйте додати страви або змінити бюджет.');
-  });
 });
 
 root.addEventListener('keydown', event => {
@@ -266,12 +272,19 @@ async function init() {
       render();
       return;
     }
-    const saved = JSON.parse(localStorage.getItem('tablemate') || 'null');
+    const storage = demoMode ? sessionStorage : localStorage;
+    const storageKey = demoMode ? 'tablemate-demo' : 'tablemate';
+    const saved = JSON.parse(storage.getItem(storageKey) || 'null');
     if (saved?.groupId && saved?.token && !new URLSearchParams(location.search).has('invite')) {
       state.token = saved.token;
       state.kitchenToken = saved.kitchenToken || '';
       try { state.group = await api(`/groups/${saved.groupId}`); }
-      catch { localStorage.removeItem('tablemate'); state.token = ''; }
+      catch { storage.removeItem(storageKey); state.token = ''; }
+    }
+    if (demoMode && !state.group) {
+      root.innerHTML = '<main class="fatal" role="status"><h1>Готуємо демо-стіл ✳</h1><p>Додаємо гостей і страви…</p></main>';
+      await createDemo();
+      return;
     }
     render();
   } catch (error) { root.innerHTML = `<main class="fatal"><h1>Не вдалося завантажити застосунок</h1><p>${escapeHtml(error.message)}</p><button data-action="reload">Спробувати ще раз</button></main>`; }

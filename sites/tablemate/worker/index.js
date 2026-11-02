@@ -49,10 +49,10 @@ async function saveGroup(bucket, group, etag) {
   if (!saved) fail(409, 'Стіл змінився. Оновіть сторінку та повторіть дію.');
 }
 function staticResponse(request, pathname) {
-  const path = ['/', '/join', '/kitchen'].includes(pathname) ? '/index.html' : pathname;
+  const path = ['/', '/join', '/kitchen', '/demo'].includes(pathname) ? '/index.html' : pathname;
   const contents = assets[path];
   if (contents === undefined) fail(404, 'Файл не знайдено.');
-  const type = path.endsWith('.html') ? 'text/html' : path.endsWith('.css') ? 'text/css' : 'text/javascript';
+  const type = path.endsWith('.html') ? 'text/html' : path.endsWith('.css') ? 'text/css' : path.endsWith('.svg') ? 'image/svg+xml' : 'text/javascript';
   return new Response(request.method === 'HEAD' ? null : contents, { headers: { 'content-type': `${type}; charset=utf-8`, 'x-content-type-options': 'nosniff', 'referrer-policy': 'no-referrer' } });
 }
 async function route(request, env) {

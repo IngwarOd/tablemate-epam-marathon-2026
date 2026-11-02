@@ -147,7 +147,7 @@ export function createApp({ dataFile = defaultDataFile } = {}) {
       const parts = url.pathname.split('/').filter(Boolean);
       if (parts[0] !== 'api') {
         if (req.method !== 'GET' && req.method !== 'HEAD') fail(405, 'Метод не підтримується.');
-        const pathname = ['/', '/join', '/kitchen'].includes(url.pathname) ? '/index.html' : url.pathname;
+        const pathname = ['/', '/join', '/kitchen', '/demo'].includes(url.pathname) ? '/index.html' : url.pathname;
         const path = resolve(publicDir, `.${pathname}`);
         if (!path.startsWith(publicDir + sep) || !existsSync(path) || !statSync(path).isFile()) fail(404, 'Файл не знайдено.');
         res.writeHead(200, { 'content-type': mime[extname(path)] || 'application/octet-stream', 'x-content-type-options': 'nosniff', 'referrer-policy': 'no-referrer' });

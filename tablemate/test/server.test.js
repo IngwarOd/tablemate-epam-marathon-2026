@@ -134,6 +134,12 @@ test('invite, budget and submission boundaries keep guest access separate from o
     assert.equal(kitchenPage.status, 200);
     assert.match(await kitchenPage.text(), /app\.js/);
     assert.equal(kitchenPage.headers.get('referrer-policy'), 'no-referrer');
+    const demoPage = await fetch(`${base}/demo`);
+    assert.equal(demoPage.status, 200);
+    assert.match(await demoPage.text(), /favicon\.svg/);
+    const favicon = await fetch(`${base}/favicon.svg`);
+    assert.equal(favicon.headers.get('content-type'), 'image/svg+xml');
+    assert.match(await favicon.text(), /<svg/);
   } finally { await close(); }
 });
 

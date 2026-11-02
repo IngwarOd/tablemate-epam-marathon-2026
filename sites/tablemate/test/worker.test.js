@@ -31,6 +31,12 @@ test('hosted worker serves the app and preserves the group order flow', async ()
   };
   const page = await worker.fetch(new Request('https://tablemate.test/'), env);
   assert.match(await page.text(), /Tablemate/);
+  const demoPage = await worker.fetch(new Request('https://tablemate.test/demo'), env);
+  assert.equal(demoPage.status, 200);
+  assert.match(await demoPage.text(), /favicon\.svg/);
+  const favicon = await worker.fetch(new Request('https://tablemate.test/favicon.svg'), env);
+  assert.equal(favicon.headers.get('content-type'), 'image/svg+xml; charset=utf-8');
+  assert.match(await favicon.text(), /<svg/);
   const created = await call('/api/groups', 'POST', {
     title: 'Тестова вечеря', ownerName: 'Ігор', serviceAt: new Date(Date.now() + 86_400_000).toISOString(),
     timeZone: 'Europe/Kyiv', utcOffsetMinutes: 120, guestLimit: 4, budget: 1000
